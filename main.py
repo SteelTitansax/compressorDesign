@@ -102,3 +102,66 @@ print(f"Random Forest Precisión R²: {score:.4f}")
 # Exportar modelo
 joblib.dump(modelo_rf, "random_forest_model.pkl")
 print("Modelo Random Forest guardado como 'random_forest_model.pkl'")
+
+
+import joblib
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+# Convertimos las salidas en categorías
+df['Pureza'] = pd.cut(df['N2_out (%)'], bins=[0, 95, 99.9, 100], labels=["Baja", "Media", "Alta"])
+
+# Variables de entrada y salida
+X = df[['P_in (atm)', 'T_in (°C)', 'Flow Rate (kg/h)', 'Energy Consumed (kWh)', 'Efficiency']]
+Y = df['Pureza']
+
+# División en entrenamiento y prueba
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+
+# Entrenar modelo
+modelo_lr = LogisticRegression(max_iter=1000)
+modelo_lr.fit(X_train, Y_train)
+
+# Evaluar modelo
+Y_pred = modelo_lr.predict(X_test)
+accuracy = accuracy_score(Y_test, Y_pred)
+print(f"Logistic Regression Precisión: {accuracy:.4f}")
+
+# Exportar modelo
+joblib.dump(modelo_lr, "logistic_regression.pkl")
+
+
+import joblib
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+# Entrenar modelo
+modelo_gb = GradientBoostingClassifier(n_estimators=100, random_state=42)
+modelo_gb.fit(X_train, Y_train)
+
+# Evaluar modelo
+Y_pred = modelo_gb.predict(X_test)
+accuracy = accuracy_score(Y_test, Y_pred)
+print(f"Gradient Boosting Classifier Precisión: {accuracy:.4f}")
+
+# Exportar modelo
+joblib.dump(modelo_gb, "gradient_boosting_classifier.pkl")
+
+import joblib
+from sklearn.neural_network import MLPClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+# Entrenar modelo
+modelo_mlp = MLPClassifier(hidden_layer_sizes=(100, 100), max_iter=1000, random_state=42)
+modelo_mlp.fit(X_train, Y_train)
+
+# Evaluar modelo
+Y_pred = modelo_mlp.predict(X_test)
+accuracy = accuracy_score(Y_test, Y_pred)
+print(f"MLP Neural Network Precisión: {accuracy:.4f}")
+
+# Exportar modelo
+joblib.dump(modelo_mlp, "mlp_classifier.pkl")
