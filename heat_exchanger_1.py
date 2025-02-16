@@ -2,7 +2,7 @@
 
 
 class heatExchanger:
-    def __init__(self,m_air,T_air_in,T_air_out,T_cooling_flow_in,T_cooling_flow_out,Q_water,D,n,L):
+    def __init__(self,m_air,T_air_in,T_air_out,T_cooling_flow_in,T_cooling_flow_out,Q_water,D,n,L,cp_fluid_to_refrigerate):
 
         self.m_air = m_air
         self.T_air_in = T_air_in
@@ -13,6 +13,7 @@ class heatExchanger:
         self.D = D
         self.n = n
         self.L = L
+        self.cp_fluid_to_refrigerate = cp_fluid_to_refrigerate
 
         print("Heat exchanger initial variables")
         print("--------------------------------")
@@ -95,7 +96,10 @@ class heatExchanger:
         print("Delta water Atm", delta_water/101300)
         print("-----------------------------------")
 
-        
+        Q = m_air * self.cp_fluid_to_refrigerate * (T_air_in - T_air_out)     
+
+        print("Heat Exchanged Q (Kj) : ", Q/1000)
+        print("-----------------------------------")   
 
 if __name__ == "__main__":
 
@@ -110,13 +114,14 @@ if __name__ == "__main__":
 
     m_air = 4.93 # kg/s
     T_air_in = 298 # Kº
-    T_air_out = 63.73 # Cº
+    T_air_out = 100 # Cº
     T_coolin_flow_in = 25 + 273 # Kº
     T_coolin_flow_out = 35 + 273 # Kº
     m_water = 2.78 # kg/s
     D = 0.02 # m (tubes diameter) 
     n = 50 # (number of tubes)
     L = 5 # m (heath exchanger length)
+    cp_fluid_to_refrigerate = 1005 # J/(Kg·K)
 
     # Reynolds parameters 
     # ---------------------------------------------
@@ -126,7 +131,7 @@ if __name__ == "__main__":
     rho_water = 997 # kg/m3
     mu_water = 0.00089
 
-    heatExchanger = heatExchanger(m_air,T_air_in,T_air_out,T_coolin_flow_in,T_coolin_flow_out,m_water,D,n,L)
+    heatExchanger = heatExchanger(m_air,T_air_in,T_air_out,T_coolin_flow_in,T_coolin_flow_out,m_water,D,n,L,cp_fluid_to_refrigerate)
 
     heatExchanger.kern_dimensioning(rho_air,mu_air,rho_water)
 
