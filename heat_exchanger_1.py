@@ -1,142 +1,112 @@
-
-
+import math
 
 class heatExchanger:
-    def __init__(self,m_air,T_air_in,T_air_out,T_cooling_flow_in,T_cooling_flow_out,Q_water,D,n,L,cp_fluid_to_refrigerate):
-
+    def __init__(self, m_air, T_air_in, T_air_out, T_cooling_flow_in, T_cooling_flow_out, m_nitrogen, D, n, L, C_p_air, C_p_nitrogen_liquid):
+        # Variables set up 
         self.m_air = m_air
         self.T_air_in = T_air_in
         self.T_air_out = T_air_out
-        self.T_coolin_flow_in = T_coolin_flow_in
-        self.T_coolin_flow_out = T_coolin_flow_out
-        self.m_water = m_water
+        self.T_cooling_flow_in = T_cooling_flow_in
+        self.T_cooling_flow_out = T_cooling_flow_out
+        self.m_nitrogen = m_nitrogen
         self.D = D
         self.n = n
         self.L = L
-        self.cp_fluid_to_refrigerate = cp_fluid_to_refrigerate
+        self.C_p_air = C_p_air
+        self.C_p_nitrogen_liquid = C_p_nitrogen_liquid
 
         print("Heat exchanger initial variables")
         print("--------------------------------")
-        print("--------------------------------")
-        print("m_air",m_air)
-        print("T_air_in",T_air_in)
-        print("T_air_out",T_air_out)
-        print("T_coolin_flow_in",T_coolin_flow_in)
-        print("T_coolin_flow_out",T_coolin_flow_out)
-        print("Q_water",Q_water)
-        print("D",D)
-        print("n",n)
-        print("L",L)
+        print(f"m_air: {m_air}")
+        print(f"T_air_in: {T_air_in}")
+        print(f"T_air_out: {T_air_out}")
+        print(f"T_cooling_flow_in: {T_cooling_flow_in}")
+        print(f"T_cooling_flow_out: {T_cooling_flow_out}")
+        print(f"m_nitrogen: {m_nitrogen}")
+        print(f"D: {D}")
+        print(f"n: {n}")
+        print(f"L: {L}")
+        print(f"C_p_air: {C_p_air}")
+        print(f"C_p_nitrogen_liquid: {C_p_nitrogen_liquid}")
 
-    def kern_dimensioning(self,rho_air,mu_air,rho_water):
+    def kern_dimensioning(self, rho_air, mu_air, rho_nitrogen, mu_nitrogen):
+        # Air thermic load (Q)
+        Q_air = self.m_air * self.C_p_air * (self.T_air_in - self.T_air_out)
+        print(f"Q_air: {Q_air} J/s")
+        
+        # Liquide nytrogen thermic load (Q)
+        Q_nitrogen = self.m_nitrogen * self.C_p_nitrogen_liquid * (self.T_cooling_flow_out - self.T_cooling_flow_in)
+        print(f"Q_nitrogen: {Q_nitrogen} J/s")
+        print("------------------------")
 
-        # Air speed calculation 
-        # ----------------------------------------
+        # LMTD calculation
+        delta_T1 = self.T_air_in - self.T_cooling_flow_out  # Bigger temperature difference
+        delta_T2 = self.T_air_out - self.T_cooling_flow_in  # Smaller temperature difference
 
-        A_tubes = self.n * 3.1416 * (D**2/4)
+        if delta_T1 > 0 and delta_T2 > 0:
+            delta_T_ml = (delta_T2 - delta_T1) / math.log(delta_T2 / delta_T1)
+            print(f"T Delta (LMTD): {delta_T_ml} K")
+        else:
+            delta_T_ml = None
+            print("Error: Not valid temperatures for LMTD calculation")
+        
+        # Cooling refrigerant mass calculation 
+        
+        m_cooling = Q_air / (self.C_p_nitrogen_liquid * (self.T_cooling_flow_out - self.T_cooling_flow_in))
+        print(f"required m_cooling: {m_cooling} kg/s")
+        print("------------------------")
 
-        print("A tubes",A_tubes)
-        print("-------------------")
+        # Dimension parameters calculation and details 
 
-        v_air = m_air/ ( rho_air * A_tubes )
-
-        print("V air",v_air)
-        print("-------------------")
-
-        # Reynolds calculation
-        # ----------------------------------------
-
-        reynolds_air = (rho_air * v_air * D) / mu_air
- 
-        print("Reynolds air",reynolds_air)
-        print("----------------------------")
-
-        # Air friction factor 
-        # ----------------------------------------
-
+        A_tubes = self.n * 3.1416 * (self.D**2 / 4)
+        print(f"Tubes area: {A_tubes} m²")
+        v_air = self.m_air / (rho_air * A_tubes)
+        print(f"air velocity: {v_air} m/s")
+        reynolds_air = (rho_air * v_air * self.D) / mu_air
+        print(f"Reynolds air: {reynolds_air}")
         f_air = 0.079 * (reynolds_air**-0.25)
-        
-        print("f air",f_air)
-        print("---------------------------")
-        
-        # Pressure air fall 
-        # ----------------------------------------
+        print(f"frictión factor air: {f_air}")
+        delta_P_air = (f_air * self.L * rho_air * (v_air**2)) / self.D
+        print(f"air pressure fall: {delta_P_air} Pa")
+        print(f"air pressure fall: {delta_P_air / 101300} atm")
 
-        delta_P_air = (f_air * L * rho_air * (v_air**2))/D
+        # Liquide nitrogen calculation 
 
-        print("Delta_P Pa",delta_P_air)
-        print("----------------------------")
-
-        print("Delta-P Bar",delta_P_air/101300)
-        print("------------------------------")
-
-        # Speed water calculation 
-        # ----------------------------------------
-
-        v_water = m_water / (rho_water * A_tubes) 
-        
-        print("v water :", v_water)
-        print("------------------------------")
-
-        reynolds_water = (rho_water * v_water * D)/ mu_water 
-
-        print("reynolds water :", reynolds_water)
-        print("--------------------------------")
-
-        f_water = 0.079 * (reynolds_water ** -0.25)
-
-        print("f water", f_water)
-        print("--------------------------------")
-
-        delta_water = (f_water * L * rho_water * (v_water**2)) / D
-
-        print("Delta water Pa", delta_water)
-        print("--------------------------------")
-
-        print("Delta water Atm", delta_water/101300)
-        print("-----------------------------------")
-
-        Q = m_air * self.cp_fluid_to_refrigerate * (T_air_in - T_air_out)     
-
-        print("Heat Exchanged Q (Kj) : ", Q/1000)
-        print("-----------------------------------")   
+        v_nitrogen = self.m_nitrogen / (rho_nitrogen * A_tubes)
+        reynolds_nitrogen = (rho_nitrogen * v_nitrogen * self.D) / mu_nitrogen
+        f_nitrogen = 0.079 * (reynolds_nitrogen ** -0.25)
+        delta_nitrogen = (f_nitrogen * self.L * rho_nitrogen * (v_nitrogen**2)) / self.D
+        print(f"liquid nytrogen pressure fall: {delta_nitrogen} Pa")
+        print(f"liquid nytrogen pressure fall: {delta_nitrogen / 101300} atm")
 
 if __name__ == "__main__":
-
-    # Heath exchanger dimensioning using kern method 
-    # ----------------------------------------------
+    # Heat exchanger parameters
     
-    # Note : We consider that air speed does not change when temperature fall down 
-    # ----------------------------------------------------------------------------
+    m_air = 4.93  # kg/s
+    T_air_in = 298  # K
+    T_air_out = 100  # K
+    T_cooling_flow_in = 77  # K (phase change liquide nytrogen)
+    T_cooling_flow_out = 100  # K
+    m_nitrogen = 2.78  # kg/s
+    D = 0.02  # m (tubes diameter )
+    n = 50  # number of tubes
+    L = 5  # m (exchange length)
 
-    # General Parameters
-    # ----------------------------------------------
+    # Heat calorific capacity parameters
+    
+    C_p_air = 1005  # J/kg·K (air heat capacity)
+    C_p_nitrogen_liquid = 2.9 * 1000  # J/kg·K (nytrogen liquide heat capacity J/kg·K)
 
-    m_air = 4.93 # kg/s
-    T_air_in = 298 # Kº
-    T_air_out = 100 # Cº
-    T_coolin_flow_in = 25 + 273 # Kº
-    T_coolin_flow_out = 35 + 273 # Kº
-    m_water = 2.78 # kg/s
-    D = 0.02 # m (tubes diameter) 
-    n = 50 # (number of tubes)
-    L = 5 # m (heath exchanger length)
-    cp_fluid_to_refrigerate = 1005 # J/(Kg·K)
+    # Reynolds parameters
+    
+    rho_air = 1.18  # kg/m³
+    mu_air = 0.0000217  # Pa·s
+    rho_nitrogen = 800  # kg/m³ (nytrogen líquide density)
+    mu_nitrogen = 0.00019  # Pa·s (liquide nytrógen viscosity)
 
-    # Reynolds parameters 
-    # ---------------------------------------------
-
-    rho_air = 1.18 # kg /m3 at 150 Cº
-    mu_air = 0.0000217 # Pa * s
-    rho_water = 997 # kg/m3
-    mu_water = 0.00089
-
-    heatExchanger = heatExchanger(m_air,T_air_in,T_air_out,T_coolin_flow_in,T_coolin_flow_out,m_water,D,n,L,cp_fluid_to_refrigerate)
-
-    heatExchanger.kern_dimensioning(rho_air,mu_air,rho_water)
-
-
-
-
+    # Heat exchanger initialization
+    
+    heatExchanger = heatExchanger(m_air, T_air_in, T_air_out, T_cooling_flow_in, T_cooling_flow_out, m_nitrogen, D, n, L, C_p_air, C_p_nitrogen_liquid)
+    heatExchanger.kern_dimensioning(rho_air, mu_air, rho_nitrogen, mu_nitrogen)
 
 
